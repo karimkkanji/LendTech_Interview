@@ -7,10 +7,10 @@ import Add from './components/Add';
 import Subtract from './components/Subtract';
 import Reset from './components/Reset';
 import styled, { keyframes } from "styled-components";
+import RandomData from './components/RandomData';
 
 function App() {
   const [counter, setCounter] = useState(2);
-  const [isInteger, setIsInteger] = useState(true);
   const [isEven, setIsEven] = useState<any>(true);
   const [glowColor, setGlowColor] = useState(["#286e0a", "#5fe923"])
   const [items, setItems] = useState<any>([]);
@@ -140,7 +140,6 @@ function App() {
       })
   }, [counter])
   const getRandomData = () => {
-
     axios.get("https://services.arcgis.com/afSMGVsC7QlRK1kZ/arcgis/rest/services/OpenDataScooterTrips_Jul2019/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json").then((response) => {
 
       let randomData = Math.floor((Math.random() * response?.data?.features?.length) + 1);
@@ -160,14 +159,14 @@ function App() {
           <Square squareRoot={squareRoot} />
           <Add add={add} />
           <Reset reset={reset} />
-          <button onClick={getRandomData} className="btn btn-random">Random</button>
+          <RandomData randomData={getRandomData} />
         </div> :
           <div>
             <input placeholder='Input Number' type={"number"} className="input-custom" onChange={(e: any) => setInput(e.target.value)} onKeyDown={handleKeyDown} />
             <button className='btn btn-arithmetic' onClick={setInputFunc}>Confirm</button>
           </div>}
         <p>Values stored from counter:</p>
-        <div><button className='btn btn-arithmetic' onClick={decreasePosition} disabled={position == 0}>«</button><span>{items[position]}</span><button className='btn btn-arithmetic' onClick={increasePosition} disabled={position == items.length - 1}>»</button></div>
+        <div><button className='btn btn-arithmetic' onClick={decreasePosition} disabled={position === 0}>«</button><span>{items[position]}</span><button className='btn btn-arithmetic' onClick={increasePosition} disabled={position === items.length - 1}>»</button></div>
       </header>
     </div>
   );

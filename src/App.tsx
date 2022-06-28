@@ -13,6 +13,10 @@ function App() {
   const [isInteger, setIsInteger] = useState(true);
   const [isEven, setIsEven] = useState<any>(true);
   const [glowColor, setGlowColor] = useState(["#286e0a", "#5fe923"])
+  const [items, setItems] = useState<any>([]);
+  const [position, setPosition] = useState(0);
+  const [isNumber, setIsNumber] = useState(true);
+  const [input, setInput] = useState(0);
 
   var glow = keyframes`
   from {
@@ -87,6 +91,22 @@ function App() {
   const reset = () => {
     setCounter(2);
   }
+  const decreasePosition = () => {
+    if (position > 0) {
+      setPosition((position) => position - 1)
+    }
+  }
+  const setInputFunc = () => {
+    setCounter(input);
+    setIsNumber(true);
+  }
+  const increasePosition = () => {
+    console.log(position, items)
+    setPosition((position) => {
+      if (position < items.length - 1) return position + 1;
+      else return position;
+    })
+  }
   const isIntegerFunc = (value: any) => {
     if (Number.isInteger(value)) {
       setGlowColor(["#286e0a", "#5fe923"])
@@ -96,10 +116,22 @@ function App() {
     }
     if (isNaN(counter) || counter.toString() === "Infinity") {
       setGlowColor(["#c30010", "#ee6b6e"])
+      setIsNumber(false);
+    }
+  }
+  const handleKeyDown = (event: any) => {
+    if (event.key === 'Enter') {
+      setInputFunc();
     }
   }
   useEffect(() => {
     isIntegerFunc(counter);
+    if (counter.toString() !== "Infinity") {
+      setItems((items: any) => {
+        localStorage.setItem('items', JSON.stringify([...items, counter]));
+        return [...items, counter]
+      });
+    }
     axios.get(`https://api.isevenapi.xyz/api/iseven/${counter}/`).then((response: any) => {
       setIsEven(response.data.iseven)
     })
@@ -107,20 +139,35 @@ function App() {
         setIsEven("No Response");
       })
   }, [counter])
+  const getRandomData = () => {
 
+    axios.get("https://services.arcgis.com/afSMGVsC7QlRK1kZ/arcgis/rest/services/OpenDataScooterTrips_Jul2019/FeatureServer/0/query?where=1%3D1&outFields=*&outSR=4326&f=json").then((response) => {
+
+      let randomData = Math.floor((Math.random() * response?.data?.features?.length) + 1);
+      setCounter(response.data.features[randomData]?.attributes.TripDuration);
+
+    })
+  }
   return (
     <div className="App">
       <header className="App-header">
         <GlowStyle className={`counter-text`}>{counter}</GlowStyle>
         <GlowRainbow>{typeof isEven === "boolean" ? <h4>Is even? {isEven ? "true" : "false"}</h4> : <></>}</GlowRainbow>
-        <div>
+
+        {isNumber ? <div>
           <Subtract subtract={subtract} />
           <Multiply multiply={multiply} />
           <Square squareRoot={squareRoot} />
           <Add add={add} />
           <Reset reset={reset} />
-
-        </div>
+          <button onClick={getRandomData} className="btn btn-random">Random</button>
+        </div> :
+          <div>
+            <input placeholder='Input Number' type={"number"} className="input-custom" onChange={(e: any) => setInput(e.target.value)} onKeyDown={handleKeyDown} />
+            <button className='btn btn-arithmetic' onClick={setInputFunc}>Confirm</button>
+          </div>}
+        <p>Values stored from counter:</p>
+        <div><button className='btn btn-arithmetic' onClick={decreasePosition} disabled={position == 0}>«</button><span>{items[position]}</span><button className='btn btn-arithmetic' onClick={increasePosition} disabled={position == items.length - 1}>»</button></div>
       </header>
     </div>
   );
